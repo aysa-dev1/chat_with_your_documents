@@ -11,4 +11,4 @@ streamlit>=1.56.0
 python-dotenv>=1.2.2
 pytest >= 9.0.3
 pytest-mock >= 3.15.1
-torchvision >= 0.26.0+
+torchvision >= 0.26.0
