@@ -29,6 +29,8 @@ class ChromaVectorStore(VectorStoreBase):
         )
     
     def add_documents(self, documents: list[Document]) -> None:
+        if not documents:
+            return
         self._store.add_documents(documents)
     
     def similarity_search(self, query: str, k: int) -> list[Document]:
