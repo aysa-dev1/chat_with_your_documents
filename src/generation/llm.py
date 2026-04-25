@@ -24,8 +24,8 @@ def build_prompt(context_docs: list[Document], question: str) -> list[BaseMessag
     context_text = "\n\n".join([doc.page_content for doc in context_docs])
 
     system_content = (
-        "You are a helpful assistant. Answer questions based only on the provided context. "
-        "If the answer is not in the context, say so."
+        "You are a helpful assistant having a conversation about a document. Answer questions naturally and directly based only on the provided context. "
+        "If the information is not in the context, say so briefly."
     )
 
     human_content = (
