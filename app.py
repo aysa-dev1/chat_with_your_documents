@@ -10,6 +10,7 @@ from src.services.rag_pipeline import run_rag_pipeline
 from src.retrieval.vector_store import ChromaVectorStore
 
 # initialization
+load_dotenv()
 
 @st.cache_resource
 def load_llm() -> ChatAnthropic:
@@ -24,8 +25,6 @@ def load_vector_store(collection_name: str) -> ChromaVectorStore:
     embedder = load_embedder()
     return ChromaVectorStore(embedder, collection_name=collection_name)
 
-load_dotenv()
-
 try:
     llm = load_llm()
 except ValueError as e:
@@ -34,8 +33,8 @@ except ValueError as e:
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "document_uploaded" not in st.session_state:
-    st.session_state.document_uploaded = False
+if "ingested_file" not in st.session_state:
+    st.session_state.ingested_file = None
 
 # handling file upload
 uploaded_file = st.sidebar.file_uploader("Upload your PDF document", type=["pdf"])
@@ -43,20 +42,25 @@ uploaded_file = st.sidebar.file_uploader("Upload your PDF document", type=["pdf"
 collection_name = "default"
 vector_store = load_vector_store(collection_name)
 
+if uploaded_file is None and st.session_state.ingested_file is not None:                                                 
+    st.session_state.ingested_file = None
+    st.session_state.messages = []  
+
 if uploaded_file is not None:
     collection_name = "".join(filter(str.isalnum, uploaded_file.name))
     
     vector_store = load_vector_store(collection_name)
 
-    if not st.session_state.document_uploaded:
+    if uploaded_file.name != st.session_state.ingested_file:
         with st.spinner("Processing document..."):
             
             chunk_count = ingest_document(uploaded_file, vector_store)
             if chunk_count == 0:
                 st.sidebar.error("No text could be extracted from this PDF. It may be a scanned document")
             else:
-                st.session_state.document_uploaded = True
+                st.session_state.ingested_file = uploaded_file.name
                 st.sidebar.success(f"Indexed {chunk_count} chunks!")
+                st.session_state.messages = []
 
 
 # handling chat history
@@ -74,7 +78,7 @@ if prompt := st.chat_input("Ask a question about your document"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    if not st.session_state.document_uploaded:
+    if st.session_state.ingested_file is None:
         st.warning("No document uploaded! Please upload a document in the sidebar, before asking questions")
     else:
         with st.chat_message("assistant"):
