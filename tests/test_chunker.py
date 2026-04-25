@@ -6,8 +6,8 @@ def test_chunk_documents_valid_documents(monkeypatch):
     monkeypatch.setenv("CHUNK_SIZE", "50")
     monkeypatch.setenv("CHUNK_OVERLAP", "10")
 
-    long_text: str = "ABCD" * 100
-    doc: Document = Document(page_content=long_text, metadata={"source": "test.pdf", "page": 1})
+    long_text = "ABCD" * 100
+    doc = Document(page_content=long_text, metadata={"source": "test.pdf", "page": 1})
 
     chunks = chunk_documents([doc])
 
@@ -20,9 +20,9 @@ def test_chunk_documents_metadata_preservation(monkeypatch):
     monkeypatch.setenv("CHUNK_SIZE", "20")
     monkeypatch.setenv("CHUNK_OVERLAP", "0")
 
-    original_metadata: dict = {"source": "manual.pdf", "page": 42, "author": "aysa-dev"}
+    original_metadata = {"source": "manual.pdf", "page": 42, "author": "aysa-dev"}
 
-    doc: Document = Document(page_content="AHBKLSOMD"*5, metadata=original_metadata)
+    doc = Document(page_content="AHBKLSOMD"*5, metadata=original_metadata)
 
 
     chunks = chunk_documents([doc])

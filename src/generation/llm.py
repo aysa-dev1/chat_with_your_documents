@@ -1,6 +1,6 @@
 from langchain_anthropic import ChatAnthropic
 from langchain_core.documents import Document
-from langchain_core.messages import SystemMessage, HumanMessage, BaseMessage
+from langchain_core.messages import SystemMessage, HumanMessage, BaseMessage, AIMessage
 import os
 
 def get_llm() -> ChatAnthropic:
@@ -19,29 +19,37 @@ def get_llm() -> ChatAnthropic:
     )
 
 
-def build_prompt(context_docs: list[Document], question: str) -> list[BaseMessage]:
+def build_prompt(context_docs: list[Document], question: str, chat_history: list[dict[str, str]]) -> list[BaseMessage]:
     
-    context_text = "\n\n".join([doc.page_content for doc in context_docs])
+    messages = []
 
     system_content = (
         "You are a helpful assistant having a conversation about a document. Answer questions naturally and directly based only on the provided context. "
         "If the information is not in the context, say so briefly."
     )
+    messages.append(SystemMessage(content=system_content))
 
+    if chat_history is not None:
+        for entry in chat_history:
+            if entry["role"] == "user":
+                messages.append(HumanMessage(content=entry["content"]))
+            elif entry["role"] == "assistant":
+                messages.append(AIMessage(content=entry["content"]))
+
+    context_text = "\n\n".join([doc.page_content for doc in context_docs])
     human_content = (
         f"Context:\n{context_text}\n\n"
         f"Question: {question}"
     )
 
-    return [
-        SystemMessage(content=system_content),
-        HumanMessage(content=human_content)
-    ]
+    messages.append(HumanMessage(content=human_content))
+
+    return messages
 
 
-def generate_answer(question: str, context_docs: list[Document], llm: ChatAnthropic) -> str:
+def generate_answer(question: str, context_docs: list[Document], llm: ChatAnthropic, chat_history: list[dict[str, str]]=None) -> str:
     
-    messages = build_prompt(context_docs, question)
+    messages = build_prompt(context_docs, question, chat_history)
 
     response = llm.invoke(messages)
 

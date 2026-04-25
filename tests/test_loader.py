@@ -3,7 +3,7 @@ from src.ingestion.loader import load_pdf
 
 
 def test_load_pdf_valid_content(mocker):
-    test_text: str = "Hello, this is a test text."
+    test_text = "Hello, this is a test text."
     mock_page = mocker.Mock()
     mock_page.extract_text.return_value = test_text
 
@@ -23,7 +23,7 @@ def test_load_pdf_valid_content(mocker):
 
 
 def test_load_pdf_skips_empty_pages(mocker):
-    valid_page_text: str = "Valid text on page 1"
+    valid_page_text = "Valid text on page 1"
     page_valid = mocker.Mock()
     page_valid.extract_text.return_value = valid_page_text
 
@@ -41,7 +41,7 @@ def test_load_pdf_skips_empty_pages(mocker):
 
 
 def test_load_pdf_source_fallback(mocker):
-    content_text: str = "Some content" 
+    content_text = "Some content" 
     mock_page = mocker.Mock()
     mock_page.extract_text.return_value = content_text
 

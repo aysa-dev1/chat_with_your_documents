@@ -13,11 +13,12 @@ def test_run_rag_pipeline_valid_path(mocker):
     )
 
     question = "How do I test RAG?"
-    answer, sources = run_rag_pipeline(question, mock_vector_store, mock_llm)
+    chat_history = []
+    answer, sources = run_rag_pipeline(question, mock_vector_store, mock_llm, chat_history)
 
     mock_vector_store.similarity_search.assert_called_once_with(question, 4)
 
-    mock_gen.assert_called_once_with(question, mock_results, mock_llm)
+    mock_gen.assert_called_once_with(question, mock_results, mock_llm, chat_history)
 
     assert answer == "mocked answer"
     assert sources == mock_results

@@ -2,6 +2,7 @@ import streamlit as st
 from langchain_anthropic import ChatAnthropic
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
+import os
 
 from src.generation.llm import get_llm
 from src.retrieval.embedder import get_embedder
@@ -11,6 +12,8 @@ from src.retrieval.vector_store import ChromaVectorStore
 
 # initialization
 load_dotenv()
+
+memory_window = int(os.getenv("MEMORY_WINDOW", "6"))
 
 @st.cache_resource
 def load_llm() -> ChatAnthropic:
@@ -35,6 +38,8 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "ingested_file" not in st.session_state:
     st.session_state.ingested_file = None
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
 # handling file upload
 uploaded_file = st.sidebar.file_uploader("Upload your PDF document", type=["pdf"])
@@ -44,7 +49,8 @@ vector_store = load_vector_store(collection_name)
 
 if uploaded_file is None and st.session_state.ingested_file is not None:                                                 
     st.session_state.ingested_file = None
-    st.session_state.messages = []  
+    st.session_state.messages = []
+    st.session_state.chat_history = []
 
 if uploaded_file is not None:
     collection_name = "".join(filter(str.isalnum, uploaded_file.name))
@@ -61,11 +67,13 @@ if uploaded_file is not None:
                 st.session_state.ingested_file = uploaded_file.name
                 st.sidebar.success(f"Indexed {chunk_count} chunks!")
                 st.session_state.messages = []
+                st.session_state.chat_history = []
 
 
 # handling chat history
 if st.sidebar.button("Clear conversation"):
     st.session_state.messages = []
+    st.session_state.chat_history = []
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -83,8 +91,8 @@ if prompt := st.chat_input("Ask a question about your document"):
     else:
         with st.chat_message("assistant"):
             with st.spinner("Your document is being analyzed..."):
-
-                answer, sources = run_rag_pipeline(prompt, vector_store, llm)
+                chat_history = st.session_state.chat_history[-memory_window:]
+                answer, sources = run_rag_pipeline(prompt, vector_store, llm, chat_history)
 
                 st.markdown(answer)
 
@@ -98,3 +106,5 @@ if prompt := st.chat_input("Ask a question about your document"):
                         st.divider()
                 
                 st.session_state.messages.append({"role": "assistant", "content": answer})
+                st.session_state.chat_history.append({"role": "user", "content": prompt})
+                st.session_state.chat_history.append({"role": "assistant", "content": answer})
