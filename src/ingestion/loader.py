@@ -1,6 +1,8 @@
 from typing import BinaryIO
-from pypdf import PdfReader
+
 from langchain_core.documents import Document
+from pypdf import PdfReader
+
 
 def load_pdf(obj_file: BinaryIO) -> list[Document]:
     """
@@ -9,7 +11,6 @@ def load_pdf(obj_file: BinaryIO) -> list[Document]:
 
     documents: list[Document] = []
 
-
     reader = PdfReader(obj_file)
 
     for page_num, page in enumerate(reader.pages):
@@ -17,13 +18,13 @@ def load_pdf(obj_file: BinaryIO) -> list[Document]:
 
         if not page_text or not page_text.strip():
             continue
-            
+
         doc = Document(
             page_content=page_text,
             metadata={
                 "page": page_num + 1,
-                "source": getattr(obj_file, "name", "uploaded_file")
-            }
+                "source": getattr(obj_file, "name", "uploaded_file"),
+            },
         )
 
         documents.append(doc)

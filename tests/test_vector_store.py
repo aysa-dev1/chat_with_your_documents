@@ -1,4 +1,5 @@
 from langchain_core.documents import Document
+
 from src.retrieval.vector_store import ChromaVectorStore
 
 
@@ -16,7 +17,7 @@ def test_add_documents_delegation(mocker):
 
 
 def test_similarity_search_returns_results(mocker):
-    
+
     mock_chroma_cls = mocker.patch("src.retrieval.vector_store.Chroma")
     vector_store = ChromaVectorStore(mocker.Mock(), "test_col")
 
@@ -25,7 +26,9 @@ def test_similarity_search_returns_results(mocker):
 
     results = vector_store.similarity_search("query text", k=5)
 
-    mock_chroma_cls.return_value.similarity_search.assert_called_once_with("query text", k=5)
+    mock_chroma_cls.return_value.similarity_search.assert_called_once_with(
+        "query text", k=5
+    )
     assert results == expected_docs
 
 
