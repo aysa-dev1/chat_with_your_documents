@@ -1,12 +1,15 @@
 import pytest
 from langchain_core.documents import Document
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-from src.generation.llm import get_llm, build_prompt, generate_answer
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+
+from src.generation.llm import build_prompt, generate_answer, get_llm
+
 
 def test_get_llm_missing_key(monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    with pytest.raises(ValueError, match = "ANTHROPIC_API_KEY must be set"):
+    with pytest.raises(ValueError, match="ANTHROPIC_API_KEY must be set"):
         get_llm()
+
 
 def test_get_llm_config(mocker, monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
@@ -22,14 +25,12 @@ def test_get_llm_config(mocker, monkeypatch):
     assert kwargs["max_tokens"] == 500
     assert kwargs["anthropic_api_key"] == "test-key"
 
+
 def test_build_prompt_logic():
-    docs = [
-        Document(page_content="Content 1"),
-        Document(page_content="Content 2")
-    ]
+    docs = [Document(page_content="Content 1"), Document(page_content="Content 2")]
 
     chat_history = []
-    
+
     question = "How many contents"
 
     messages = build_prompt(docs, question, chat_history)
@@ -44,13 +45,14 @@ def test_build_prompt_logic():
 
     assert "based only on the provided context" in messages[0].content
 
+
 def test_build_prompt_logic_chat_history():
     fake_doc = [Document(page_content="Company was founded in 1987")]
     question = "Who is the CEO?"
 
     chat_history = [
         {"role": "user", "content": "Hello!"},
-        {"role": "assistant", "content": "Hi there, how can I help you?"}
+        {"role": "assistant", "content": "Hi there, how can I help you?"},
     ]
 
     messages = build_prompt(fake_doc, question, chat_history)
@@ -68,7 +70,6 @@ def test_build_prompt_logic_chat_history():
     assert isinstance(messages[3], HumanMessage)
     assert "Company was founded in 1987" in messages[3].content
     assert "Who is the CEO?" in messages[3].content
-
 
 
 def test_generate_answer_delegation(mocker):

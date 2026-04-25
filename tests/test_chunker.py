@@ -1,4 +1,5 @@
 from langchain_core.documents import Document
+
 from src.ingestion.chunker import chunk_documents
 
 
@@ -22,8 +23,7 @@ def test_chunk_documents_metadata_preservation(monkeypatch):
 
     original_metadata = {"source": "manual.pdf", "page": 42, "author": "aysa-dev"}
 
-    doc = Document(page_content="AHBKLSOMD"*5, metadata=original_metadata)
-
+    doc = Document(page_content="AHBKLSOMD" * 5, metadata=original_metadata)
 
     chunks = chunk_documents([doc])
 
@@ -35,7 +35,7 @@ def test_chunk_documents_metadata_preservation(monkeypatch):
 
 
 def test_chunk_documents_empty_list():
-    
+
     result = chunk_documents([])
 
     assert result == []

@@ -1,4 +1,5 @@
 import io
+
 from src.ingestion.loader import load_pdf
 
 
@@ -41,7 +42,7 @@ def test_load_pdf_skips_empty_pages(mocker):
 
 
 def test_load_pdf_source_fallback(mocker):
-    content_text = "Some content" 
+    content_text = "Some content"
     mock_page = mocker.Mock()
     mock_page.extract_text.return_value = content_text
 
